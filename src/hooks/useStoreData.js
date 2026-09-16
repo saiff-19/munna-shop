@@ -44,6 +44,27 @@ export function useStoreData() {
     }
   }, [user, fetchProfile, fetchLedger]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    // Listen to changes across all tables for the current user
+    const subscription = supabase.channel('realtime-store')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ledger' }, () => {
+        fetchLedger();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        fetchProfile();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => {
+        fetchLedger();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [user, fetchLedger, fetchProfile]);
+
   const updatePrices = async (ton_price, full_cream_price) => {
     const { error } = await supabase
       .from('profiles')
