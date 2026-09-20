@@ -41,6 +41,9 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ledger ENABLE ROW LEVEL SECURITY;
 
+-- Enable Realtime for these tables
+ALTER PUBLICATION supabase_realtime ADD TABLE ledger, profiles, payments;
+
 -- RLS Policies for profiles
 CREATE POLICY "Users can view their own profile" ON profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update their own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
